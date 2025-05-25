@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Alternative {
+  id                       Int      @id @default(autoincrement())
+  company                  String
+  name                     String
+  rating                   Float
+  income                   Float
+  contribution             Float
+  term                     Float
+  payoutType               String
+  payoutEncoded            Int
+  paymentFrequency         String
+  paymentFrequencyEncoded  Int
+  taxDeduction             Boolean
+  capitalProtection        Boolean
+  beneficiaryChange        Boolean
+  createdAt                DateTime @default(now())
+}
+
+model Criterion {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  displayName String
+  direction   String
+}
+
+model Project {
+  id           Int      @id @default(autoincrement())
+  name         String
+  seed         String   @unique
+  method       String   // "promethee" | "electre"
+  createdAt    DateTime @default(now())
+
+  alternativeIds Int[]   // ID выбранных альтернатив
+  criterionIds   Int[]   // ID выбранных критериев
+  matrix         Json    // Матрица решений
+  weights        Json    // Веса критериев
+  directions     Json    // Направления ("min"/"max")
+  thresholds     Json    // Параметры метода
+  scores         Json    // Итоговые оценки
+  intermediateResults Json?
+}
+
