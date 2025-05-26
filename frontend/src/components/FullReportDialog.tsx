@@ -13,10 +13,12 @@ import {
   TableBody,
   TableCell,
   TableHead,
-  TableRow
+  TableRow,
+  Box
 } from "@mui/material";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
+import { generatePdfReport } from "../utils/generatePdfReport";
 
 
 type Props = {
@@ -38,34 +40,6 @@ export default function FullReportDialog({ open, onClose, report }: Props) {
     link.click();
     URL.revokeObjectURL(url);
   };
-  const saveAsPdf = () => {
-    const docDefinition = {
-      content: [
-        { text: "Полный отчёт по проекту", style: "header" },
-        {
-          text: JSON.stringify(report, null, 2),
-          style: "body",
-          fontSize: 9
-        }
-      ],
-      defaultStyle: {
-        font: "Roboto"
-      },
-      styles: {
-        header: {
-          fontSize: 16,
-          bold: true,
-          margin: [0, 0, 0, 10]
-        },
-        body: {
-          fontSize: 10
-        }
-      }
-    };
-
-    pdfMake.createPdf(docDefinition).download("full_report.pdf");
-  };
-
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -140,6 +114,30 @@ export default function FullReportDialog({ open, onClose, report }: Props) {
             </ListItem>
           ))}
         </List>
+        {report.scores && report.scores.length === report.alternatives.length && (
+          <Box mt={3}>
+            <Typography variant="h6" gutterBottom>Итоговое ранжирование</Typography>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Компания</TableCell>
+                  <TableCell>Программа</TableCell>
+                  <TableCell>Оценка</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {report.alternatives.map((alt: any, i: number) => (
+                  <TableRow key={i}>
+                    <TableCell>{alt.company}</TableCell>
+                    <TableCell>{alt.name}</TableCell>
+                    <TableCell>{report.scores[i].toFixed(3)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Box>
+        )}
+
 
         {report.intermediate && (
           <>
@@ -160,7 +158,7 @@ export default function FullReportDialog({ open, onClose, report }: Props) {
                   </TableBody>
                 </Table>
 
-                <Typography variant="subtitle1" mt={2}>Матрица достоверности</Typography>
+                <Typography variant="subtitle1" mt={2}>Матрица доверия</Typography>
                 <Table size="small">
                   <TableBody>
                     {report.intermediate.credibility.map((row: number[], i: number) => (
@@ -173,7 +171,7 @@ export default function FullReportDialog({ open, onClose, report }: Props) {
                   </TableBody>
                 </Table>
 
-                <Typography variant="subtitle1" mt={2}>Порядок (нисходящий)</Typography>
+                <Typography variant="subtitle1" mt={2}>Нисходящее ранжирование</Typography>
                 <List dense>
                   {report.intermediate.descending.map((item: string, i: number) => (
                     <ListItem key={i}>
@@ -182,7 +180,7 @@ export default function FullReportDialog({ open, onClose, report }: Props) {
                   ))}
                 </List>
 
-                <Typography variant="subtitle1" mt={2}>Порядок (восходящий)</Typography>
+                <Typography variant="subtitle1" mt={2}>Восходящее ранжирование</Typography>
                 <List dense>
                   {report.intermediate.ascending.map((item: string, i: number) => (
                     <ListItem key={i}>
@@ -191,7 +189,7 @@ export default function FullReportDialog({ open, onClose, report }: Props) {
                   ))}
                 </List>
 
-                <Typography variant="subtitle1" mt={2}>Матрица предотношения (preorder matrix)</Typography>
+                <Typography variant="subtitle1" mt={2}>Матрица парных итоговых бинарных отношений</Typography>
                 <Table size="small">
                   <TableBody>
                     {report.intermediate.poMatrix.map((row: string[], i: number) => (
@@ -211,7 +209,7 @@ export default function FullReportDialog({ open, onClose, report }: Props) {
             )}
             {report.method === "promethee_ii" && report.intermediate && (
               <>
-                <Typography variant="subtitle1" mt={2}>Матрица предпочтений (Preference Degree Matrix)</Typography>
+                <Typography variant="subtitle1" mt={2}>Матрица агрегированных индексов предпочтения</Typography>
                 <Table size="small">
                   <TableBody>
                     {report.intermediate.pdMatrix.map((row: number[], i: number) => (
@@ -257,7 +255,7 @@ export default function FullReportDialog({ open, onClose, report }: Props) {
         <Button onClick={saveAsJson} variant="outlined">
           Скачать JSON
         </Button>
-        <Button onClick={saveAsPdf} variant="outlined">
+        <Button onClick={() => generatePdfReport(report)} variant="outlined">
           Скачать PDF
         </Button>
       </DialogActions>

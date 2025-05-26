@@ -22,7 +22,7 @@ import WeightsRow from "../components/WeightsRow";
 import FullReportDialog from "../components/FullReportDialog";
 import type { ProjectData } from "../types/ProjectData";
 import type { CalculateInput } from "../types/CalculateInput";
-import type { RankingResult } from "./RankingResult";
+import type { RankingResult } from "../types/RankingResult";
 
 export default function EditingPage() {
   const { projectId } = useParams();
